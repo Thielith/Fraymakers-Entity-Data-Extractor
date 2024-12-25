@@ -162,6 +162,10 @@ typedef struct entityData {
 	std::list<symbol*>* symbols;
 	OBJECT_TYPE objectType;
 	std::string objectVersion;
+	std::list<std::string> tags;
+	// std::list<int> terrains;
+	// std::list<int> tilesets;
+	unsigned int version;
 } entityData;
 
 #endif

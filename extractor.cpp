@@ -20,6 +20,8 @@ entityData* entityDataExtractor::extractEntityData(std::string path){
 	std::list<symbol*>* symbols = getSymbols(data);
 	// printSymbolData(symbols);
 
+	std::list<std::string> tags = getTags(data);
+
 	entityData* extractedData = new entityData;
 	extractedData->animations = animations;
 	extractedData->shouldExport = data["export"].asBool();
@@ -35,6 +37,8 @@ entityData* entityDataExtractor::extractEntityData(std::string path){
 	);
 	extractedData->objectVersion = data["pluginMetadata"]["com.fraymakers.FraymakersMetadata"]
 		["version"].asString();
+	extractedData->tags = tags;
+	extractedData->version = data["version"].asUInt();
 	
 	return extractedData;
 }
@@ -357,13 +361,13 @@ paletteMap* entityDataExtractor::getPaletteMap(Json::Value data){
 	paletteMap *extractedPaletteMap = new paletteMap;
 
 	extractedPaletteMap->palletteCollectionID =
-		(data[sectionName]["paletteCollection"].asString() != "") ?
-		data[sectionName]["paletteCollection"].asString() :
-		"null";
+		(data[sectionName]["paletteCollection"].asString().empty()) ?
+		"null" :
+		data[sectionName]["paletteCollection"].asString();
 	extractedPaletteMap->paletteMapID =
-		(data[sectionName]["paletteMap"].asString() != "") ?
-		data[sectionName]["paletteMap"].asString() :
-		"null";
+		(data[sectionName]["paletteMap"].asString().empty()) ?
+		"null" :
+		data[sectionName]["paletteMap"].asString();
 
 	return extractedPaletteMap;
 }
@@ -375,7 +379,7 @@ void entityDataExtractor::printPaletteMapData(paletteMap* data){
 
 std::list<symbol*>* entityDataExtractor::getSymbols(Json::Value data){
 	const std::string sectionName = "symbols";
-	std::list<symbol*> *extracteSymbols = new std::list<symbol*>;
+	std::list<symbol*> *extractedSymbols = new std::list<symbol*>;
 
 	unsigned int dataIndex = 0;
 	while(data[sectionName][dataIndex]){
@@ -383,15 +387,18 @@ std::list<symbol*>* entityDataExtractor::getSymbols(Json::Value data){
 		symbol* entry = extractSymbolByType(dataSnippit);
 
 		entry->id = dataSnippit["$id"].asString();
-		entry->alpha = dataSnippit["alpha"].asFloat();
+		entry->alpha =
+			(dataSnippit["alpha"] == Json::Value::null) ?
+			-1.0 :
+			dataSnippit["alpha"].asFloat();
 
-		extracteSymbols->push_back(entry);
+		extractedSymbols->push_back(entry);
 		tracker.incrementSymbols();
 
 		dataIndex++;
 	}
 
-	return extracteSymbols;
+	return extractedSymbols;
 }
 symbol* entityDataExtractor::extractSymbolByType(Json::Value symbolData){
 	SYMBOL_TYPE type = translator.toSymbolEnum(symbolData["type"].asString());
@@ -400,6 +407,7 @@ symbol* entityDataExtractor::extractSymbolByType(Json::Value symbolData){
 		tracker.incrementImageSymbols();
 
 		symbolImage* symbol = new symbolImage;
+		symbol->imageAssetID = symbolData["imageAsset"].asString();
 		symbol->x = symbolData["x"].asFloat();
 		symbol->y = symbolData["y"].asFloat();
 		symbol->rotation = symbolData["rotation"].asFloat();
@@ -413,7 +421,10 @@ symbol* entityDataExtractor::extractSymbolByType(Json::Value symbolData){
 		tracker.incrementCollisionBoxSymbols();
 		
 		symbolCollisionBox* symbol = new symbolCollisionBox;
-		symbol->color = symbolData["color"].asString();
+		symbol->color =
+			(symbolData["color"].asString().empty()) ?
+			"null" :
+			symbolData["color"].asString();
 		symbol->x = symbolData["x"].asFloat();
 		symbol->y = symbolData["y"].asFloat();
 		symbol->rotation = symbolData["rotation"].asFloat();
@@ -427,7 +438,10 @@ symbol* entityDataExtractor::extractSymbolByType(Json::Value symbolData){
 		tracker.incrementCollisionBodySymbols();
 
 		symbolCollisionBody* symbol = new symbolCollisionBody;
-		symbol->color = symbolData["color"].asString();
+		symbol->color =
+			(symbolData["color"].asString().empty()) ?
+			"null" :
+			symbolData["color"].asString();
 		symbol->head = symbolData["head"].asFloat();
 		symbol->hipWidth = symbolData["hipWidth"].asFloat();
 		symbol->hipXOffset = symbolData["hipXOffset"].asFloat();
@@ -511,6 +525,24 @@ void entityDataExtractor::printSymbolTypeData(symbol* data){
 		std::cout << "\tx2: " << lineSegment->x2 << std::endl;
 		std::cout << "\ty2: " << lineSegment->y2 << std::endl;
 	}
+}
+
+std::list<std::string> entityDataExtractor::getTags(Json::Value data){
+	const std::string sectionName = "tags";
+	std::list<std::string> extractedTags;
+
+	if(!data[sectionName][0]){
+		extractedTags.push_back("null");
+		return extractedTags;
+	}
+	
+	unsigned int dataIndex = 0;
+	while(data[sectionName][dataIndex]){
+		extractedTags.push_back(data[sectionName][dataIndex].asString());
+		dataIndex++;
+	}
+
+	return extractedTags;
 }
 
 void entityDataExtractor::printTitle(std::string title){

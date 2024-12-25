@@ -1,22 +1,52 @@
 # Fraymakers Entity Data Extractor
  A "library" that extracts the data of a Fraymakers .entity file into a easy-to-use struct.
 
-## Usage
-I don't know how to make a thing that installs dynamic/shared libraries yet so just download the repository and put it in your project (while following the license of course).
-
-Once installed, create a pointer of the `entityDataExtractor` class and call `extractEntityData(filePath)`, where `filePath` is a `std::string` representing the path to the .entity file (including the file).
-
-Example: `"project/entities/file.entity"`
-
-## Libraries Used
+## Attributions
 - [jsoncpp](https://github.com/open-source-parsers/jsoncpp): For parsing the .entity files
 
-## Compiling (Devs)
+## Installing
+I don't know how to upload this stuff to pacman / the windows equivalent so you gotta do it manually.
+
+### Linux
+1. Download the files.
+2. Place the `.a` library file somewhere safe (I recommend `/usr/local/lib`).
+3. Place the `.cpp` and `.h` files somewhere safe (I recommend `/usr/local/include/fraymakers-entity-data-extractor`) 
+
+Note: When compiling your program, be sure to include these places to let the compiler know to look there.
+    - Example: `[compiler] project.cpp -I/usr/local/include -o project -L/usr/local/lib`
+
+### Windows (TBD)
+
+## Usage
+
+Once installed, create a variable of type `entityDataExtractor`.  Then, call `extractEntityData(filePath)`, where `filePath` is a `std::string` representing the path to the .entity file (including the file).  The return value of the function is a pointer of type `entityData`.
+
+Example:
+
+    string path = "project/entities/file.entity"
+    entityDataExtractor extractor;
+	entityData* data = extractor.extractEntityData(path);
+
+Edge cases you'll want to know about when interacting with the struct:
+
+              Entry in Entity            |            Saved Result in Struct
+    -------------------------------------+---------------------------------------------
+    paletteCollection = null             |  paletteMap->paletteCollectionID = "null"
+    paletteMap = null                    |  paletteMap->paletteMapID = "null"
+    [symbol object] alpha = null         |  symbols[index]->alpha = -1.0
+    [collision box symbol] color = null  |  symbols[collision box index]->color = "null"
+    [collision body symbol] color = null |  symbols[collision box index]->color = "null"
+
+### Remeber to link this library and its dependant libraries to your output if you use it!
+`-o project -lEntityDataExtractor -ljsoncpp`
+###### i learned the hard way that the order of the flags matter
+
+## Compiling the Stuff in the Repository
 ### Linux
 1. Download source files.
-2. Run the makefile.
+2. Run the included makefile.
 
-### Windows
+### Windows (outdated, probably)
 Setting up the right dependicies on Windows took me a long time so there will be unnecessary steps below if you're an experienced dev.
 If these instructions fail, please create an issue about it.
 

@@ -3,7 +3,7 @@
 
 #include "stat-tracker.h"
 #include "struct-definitions.h"
-#include "external/jsoncpp.cpp"
+#include <json/json.h>
 
 class entityDataExtractor {
 	public:
@@ -34,6 +34,8 @@ class entityDataExtractor {
 		symbol* extractSymbolByType(Json::Value);
 		void printSymbolData(std::list<symbol*>*);
 		void printSymbolTypeData(symbol*);
+
+		std::list<std::string> getTags(Json::Value);
 
 		void printTitle(std::string);
 };
