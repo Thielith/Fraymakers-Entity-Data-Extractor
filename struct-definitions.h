@@ -81,10 +81,25 @@ struct layerCollisionBody : layer {
 	unsigned int defaultFoot = 0.0;
 };
 
+
 typedef struct {
 	std::string palletteCollectionID;
 	std::string paletteMapID;
 } paletteMap;
+
+
+typedef struct pluginMetadata {
+	std::string version;
+	virtual ~pluginMetadata() = default;
+} pluginMetadataEntry;
+
+struct pluginMetadataFraymakersObject : pluginMetadata {
+	OBJECT_TYPE objectType;
+};
+
+struct pluginMetadataFraymakersMenu : pluginMetadata {
+	std::string spritesheetGroup;
+};
 
 
 typedef struct symbol {
@@ -159,9 +174,11 @@ typedef struct entityData {
 	std::list<keyframe*>* keyframes;
 	std::list<layer*>* layers;
 	::paletteMap* paletteMap;
+	
+	std::list<std::string>* plugins;
+	std::list<::pluginMetadataEntry*>* pluginMetadata;
+
 	std::list<symbol*>* symbols;
-	OBJECT_TYPE objectType;
-	std::string objectVersion;
 	std::list<std::string> tags;
 	// std::list<int> terrains;
 	// std::list<int> tilesets;

@@ -1,43 +1,28 @@
 #include "extractor.h"
+#include "struct-definitions.h"
+
+// tracker:
+// track how many plugins are used
 
 entityData* entityDataExtractor::extractEntityData(std::string path){
 	std::ifstream entityFile(path, std::ifstream::binary);
 	Json::Value data;
 	entityFile >> data;
 
-	std::list<animation>* animations = getAnimations(data);
-	// printAnimationData(animations);
-
-	std::list<keyframe*>* keyframes = getKeyframes(data);
-	// printKeyframeData(keyframes);
-
-	std::list<layer*>* layers = getLayers(data);
-	// printLayerData(layers);
-
-	paletteMap* paletteMap = getPaletteMap(data);
-	// printPaletteMapData(paletteMap);
-
-	std::list<symbol*>* symbols = getSymbols(data);
-	// printSymbolData(symbols);
-
-	std::list<std::string> tags = getTags(data);
-
 	entityData* extractedData = new entityData;
-	extractedData->animations = animations;
+	extractedData->animations = getAnimations(data);
 	extractedData->shouldExport = data["export"].asBool();
 	extractedData->guid = data["guid"].asString();
 	extractedData->id = data["id"].asString();
-	extractedData->keyframes = keyframes;
-	extractedData->layers = layers;
-	extractedData->paletteMap = paletteMap;
-	extractedData->symbols = symbols;
-	extractedData->objectType = translator.toObjectEnum(
-		data["pluginMetadata"]["com.fraymakers.FraymakersMetadata"]
-		["objectType"].asString()
-	);
-	extractedData->objectVersion = data["pluginMetadata"]["com.fraymakers.FraymakersMetadata"]
-		["version"].asString();
-	extractedData->tags = tags;
+	extractedData->keyframes = getKeyframes(data);
+	extractedData->layers = getLayers(data);
+	extractedData->paletteMap = getPaletteMap(data);
+	
+	extractedData->plugins = getPlugins(data);
+	extractedData->pluginMetadata = getPluginMetadata(data, extractedData->plugins);
+
+	extractedData->symbols = getSymbols(data);
+	extractedData->tags = getTags(data);
 	extractedData->version = data["version"].asUInt();
 	
 	return extractedData;
@@ -76,7 +61,7 @@ std::list<animation>* entityDataExtractor::getAnimations(Json::Value data){
 
 	return extractedAnimations;
 }
-void entityDataExtractor::printAnimationData(std::list<animation>* data){
+void entityDataExtractor::printData(std::list<animation>* data){
 	printTitle("Animations");
 	for(animation entry : *data){
 		std::cout << entry.name << std::endl;
@@ -173,19 +158,19 @@ keyframe* entityDataExtractor::extractKeyframeByType(Json::Value keyframeData){
 
 	return nullptr;
 }
-void entityDataExtractor::printKeyframeData(std::list<keyframe*>* data){
+void entityDataExtractor::printData(std::list<keyframe*>* data){
 	printTitle("Keyframes");
 	for(keyframe* entry : *data){
 		std::cout << "\tid: " << entry->id << std::endl;
 		std::cout << "\tlength: " << entry->length << std::endl;
 		std::cout << "\ttype: " << translator.toString(entry->type) << std::endl;
 
-		printKeyframeTypeData(entry);
+		printData(entry);
 
 		std::cout << std::endl;
 	}
 }
-void entityDataExtractor::printKeyframeTypeData(keyframe* data){
+void entityDataExtractor::printData(keyframe* data){
 	if(keyframeScript* converted = dynamic_cast<keyframeScript*>(data)){
 		std::cout << "\tcode: \"" << converted->code << "\"" << std::endl;
 	}
@@ -245,8 +230,8 @@ layer* entityDataExtractor::extractLayerByType(Json::Value layerData){
 		layer->defaultColor = layerData["defaultColor"].asString();
 		
 		// layer->collisionBoxType = 
-		if(layerData["pluginMetadata"].compare("{}")){
-			Json::Value snippit = layerData["pluginMetadata"]["com.fraymakers.FraymakersMetadata"];
+		if(layerData["pluginMetadataEntry"].compare("{}")){
+			Json::Value snippit = layerData["pluginMetadataEntry"]["com.fraymakers.FraymakersMetadata"];
 			layer->collisionBoxType = translator.toCollisionBoxEnum(snippit["collisionBoxType"].asString());
 			layer->collisionBoxIndex = snippit["index"].asInt();
 
@@ -315,7 +300,7 @@ layer* entityDataExtractor::extractLayerByType(Json::Value layerData){
 
 	return nullptr;
 }
-void entityDataExtractor::printLayerData(std::list<layer*>* data){
+void entityDataExtractor::printData(std::list<layer*>* data){
 	printTitle("Layers");
 	for(layer* entry : *data){
 		std::cout << "\tname: " << entry->name << std::endl;
@@ -329,12 +314,12 @@ void entityDataExtractor::printLayerData(std::list<layer*>* data){
 		}
 		std::cout << "\ttype: " << translator.toString(entry->type) << std::endl;
 
-		printLayerTypeData(entry);
+		printData(entry);
 
 		std::cout << std::endl;
 	}
 }
-void entityDataExtractor::printLayerTypeData(layer* data){
+void entityDataExtractor::printData(layer* data){
 	if(layerScript* converted = dynamic_cast<layerScript*>(data)){
 		std::cout << "\tlanguage: \"" << converted->language << "\"" << std::endl;
 	}
@@ -371,11 +356,61 @@ paletteMap* entityDataExtractor::getPaletteMap(Json::Value data){
 
 	return extractedPaletteMap;
 }
-void entityDataExtractor::printPaletteMapData(paletteMap* data){
+void entityDataExtractor::printData(paletteMap* data){
 	printTitle("Palette Map");
 	std::cout << "\tpaletteCollection ID: " << data->palletteCollectionID << std::endl;
 	std::cout << "\tpaletteMap ID: " << data->paletteMapID << std::endl;
 }
+
+std::list<std::string>* entityDataExtractor::getPlugins(Json::Value data){
+	std::list<std::string>* extractedPlugins = new std::list<std::string>;
+	
+	unsigned int dataIndex = 0;
+	while(data["plugins"][dataIndex]){
+		tracker.incrementPlugins();
+
+		Json::Value dataSnippit = data["plugins"][dataIndex];
+		extractedPlugins->push_back(dataSnippit.asString());
+		dataIndex++;
+	}
+
+	return extractedPlugins;
+}
+
+std::list<pluginMetadataEntry*>* entityDataExtractor::getPluginMetadata(Json::Value data, std::list<std::string>* plugins){
+	const std::string sectionName = "pluginMetadata";
+	std::list<pluginMetadataEntry*>* extractedPluginMetadata = new std::list<pluginMetadataEntry*>;
+
+	for(std::string plugin : *plugins){
+		if(!data[sectionName].isMember(plugin))  continue;
+
+		Json::Value dataSnippit = data[sectionName][plugin];
+		pluginMetadataEntry* entry = extractPluginMetadataByType(dataSnippit);
+		
+		entry->version = dataSnippit["version"].asString();
+
+		extractedPluginMetadata->push_back(entry);
+	}
+
+	return extractedPluginMetadata;
+}
+pluginMetadataEntry* entityDataExtractor::extractPluginMetadataByType(Json::Value pluginData){
+	if(pluginData.isMember("objectType")){
+		pluginMetadataFraymakersObject* pluginMetadataEntry = new pluginMetadataFraymakersObject;
+
+		pluginMetadataEntry->objectType = translator.toObjectEnum(pluginData["objectType"].asString());
+		return pluginMetadataEntry;
+	}
+	else if(pluginData.isMember("spritesheetGroup")){
+		pluginMetadataFraymakersMenu* pluginMetadataEntry = new pluginMetadataFraymakersMenu;
+
+		pluginMetadataEntry->spritesheetGroup = pluginData["spritesheetGroup"].asString();
+		return pluginMetadataEntry;
+	}
+
+	return nullptr;
+}
+
 
 std::list<symbol*>* entityDataExtractor::getSymbols(Json::Value data){
 	const std::string sectionName = "symbols";
@@ -473,18 +508,18 @@ symbol* entityDataExtractor::extractSymbolByType(Json::Value symbolData){
 
 	return nullptr;
 }
-void entityDataExtractor::printSymbolData(std::list<symbol*>* data){
+void entityDataExtractor::printData(std::list<symbol*>* data){
 	printTitle("Symbols");
 	for(symbol* entry : *data){
 		std::cout << "\tid: " << entry->id << std::endl;
 		std::cout << "\talpha: " << entry->alpha << std::endl;
 
-		printSymbolTypeData(entry);
+		printData(entry);
 
 		std::cout << std::endl;
 	}
 }
-void entityDataExtractor::printSymbolTypeData(symbol* data){
+void entityDataExtractor::printData(symbol* data){
 	if(symbolImage* image = dynamic_cast<symbolImage*>(data)){
 		std::cout << "\tx: " << image->x << std::endl;
 		std::cout << "\ty: " << image->y << std::endl;

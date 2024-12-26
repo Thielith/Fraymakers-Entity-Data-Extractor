@@ -16,24 +16,30 @@ class entityDataExtractor {
 		enumTranslate translator;
 	
 		std::list<animation>* getAnimations(Json::Value);
-		void printAnimationData(std::list<animation>*);
+		void printData(std::list<animation>*);
 
 		std::list<keyframe*>* getKeyframes(Json::Value);
 		keyframe* extractKeyframeByType(Json::Value);
-		void printKeyframeData(std::list<keyframe*>*);
-		void printKeyframeTypeData(keyframe*);
+		void printData(std::list<keyframe*>*);
+		void printData(keyframe*);
 
 		std::list<layer*>* getLayers(Json::Value);
 		layer* extractLayerByType(Json::Value);
-		void printLayerData(std::list<layer*>*);
-		void printLayerTypeData(layer*);
+		void printData(std::list<layer*>*);
+		void printData(layer*);
+
 		paletteMap* getPaletteMap(Json::Value);
-		void printPaletteMapData(paletteMap*);
+		void printData(paletteMap*);
+
+		std::list<std::string>* getPlugins(Json::Value);
+
+		std::list<pluginMetadata*>* getPluginMetadata(Json::Value, std::list<std::string>*);
+		pluginMetadata* extractPluginMetadataByType(Json::Value);
 
 		std::list<symbol*>* getSymbols(Json::Value);
 		symbol* extractSymbolByType(Json::Value);
-		void printSymbolData(std::list<symbol*>*);
-		void printSymbolTypeData(symbol*);
+		void printData(std::list<symbol*>*);
+		void printData(symbol*);
 
 		std::list<std::string> getTags(Json::Value);
 

@@ -51,6 +51,8 @@ class statTracker {
         unsigned int numCustomBoxBs = 0;
         unsigned int numCustomBoxCs = 0;
 
+        unsigned int numPlugins = 0;
+
 		unsigned int numSymbols = 0;
         unsigned int numImageSymbols = 0;
         unsigned int numCollisionBoxSymbols = 0;
@@ -148,6 +150,9 @@ class statTracker {
         void incrementCustomBoxCs(){ numCustomBoxCs++; };
         unsigned int getTotalCustomBoxCs(){ return numCustomBoxCs; };
 
+        void incrementPlugins(){ numPlugins++;};
+        unsigned int getTotalPlugins(){ return numPlugins; };
+
         void incrementSymbols(){ numSymbols++; };
         unsigned int getTotalSymbols(){ return numSymbols; };
         void incrementImageSymbols(){ numImageSymbols++; };
@@ -229,6 +234,9 @@ class statTracker {
                  << "Custom box Bs: " << numCustomBoxBs << std::endl
                  << "Custom box Cs: " << numCustomBoxCs << std::endl
 				 << std::endl;
+            
+            std::cout << "Number of Plugins: " << numPlugins << std::endl
+                 << std::endl;
 			
 			std::cout << "Symbols: " << numSymbols << std::endl
                  << "Image symbols: " << numImageSymbols << std::endl
