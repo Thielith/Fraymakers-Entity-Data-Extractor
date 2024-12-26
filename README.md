@@ -2,14 +2,15 @@
  A "library" that extracts the data of a Fraymakers .entity file into a easy-to-use struct.
 
 ## Attributions
-- [jsoncpp](https://github.com/open-source-parsers/jsoncpp): For parsing the .entity files
+- [jsoncpp](https://github.com/open-source-parsers/jsoncpp): For parsing the .entity files.
+- [mingw-w64-jsoncpp](https://aur.archlinux.org/packages/mingw-w64-jsoncpp): For compiling the Windows executable version of the program.
 
 ## Installing
 I don't know how to upload this stuff to pacman / the windows equivalent so you gotta do it manually.
 
 ### Linux
 1. Download the files.
-2. Place the `.a` library file somewhere safe (I recommend `/usr/local/lib`).
+2. Place the `.a` library files somewhere safe (I recommend `/usr/local/lib`).
 3. Place the `.cpp` and `.h` files somewhere safe (I recommend `/usr/local/include/fraymakers-entity-data-extractor`) 
 
 Note: When compiling your program, be sure to include these places to let the compiler know to look there.
@@ -37,9 +38,13 @@ Edge cases you'll want to know about when interacting with the struct:
     [collision box symbol] color = null  |  symbols[collision box index]->color = "null"
     [collision body symbol] color = null |  symbols[collision box index]->color = "null"
 
-### Remeber to link this library and its dependant libraries to your output if you use it!
-`-o project -lEntityDataExtractor -ljsoncpp`
-###### i learned the hard way that the order of the flags matter
+### Remeber to link this library _and its dependant libraries_ to your makefile if you use it!
+Linux Program: `-lEntityDataExtractor -ljsoncpp -o project `
+
+Windows Program: `-lEntityDataExtractorWindows -ljsoncpp_static -o project `
+##### i learned the hard way that the order of the flags matter
+
+If you want an example, I created an example program [here](https://github.com/Thielith/Fraymakers-Entity-Statistics).
 
 ## Compiling the Stuff in the Repository
 ### Linux
