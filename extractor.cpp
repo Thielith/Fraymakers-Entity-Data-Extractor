@@ -17,10 +17,8 @@ entityData* entityDataExtractor::extractEntityData(std::string path){
 	extractedData->keyframes = getKeyframes(data);
 	extractedData->layers = getLayers(data);
 	extractedData->paletteMap = getPaletteMap(data);
-	
 	extractedData->plugins = getPlugins(data);
 	extractedData->pluginMetadata = getPluginMetadata(data, extractedData->plugins);
-
 	extractedData->symbols = getSymbols(data);
 	extractedData->tags = getTags(data);
 	extractedData->version = data["version"].asUInt();
@@ -381,12 +379,26 @@ std::list<pluginMetadataEntry*>* entityDataExtractor::getPluginMetadata(Json::Va
 	const std::string sectionName = "pluginMetadata";
 	std::list<pluginMetadataEntry*>* extractedPluginMetadata = new std::list<pluginMetadataEntry*>;
 
-	for(std::string plugin : *plugins){
-		if(!data[sectionName].isMember(plugin))  continue;
+	unsigned int index = 0;
+	bool multipleEntries = (data[sectionName].type() == Json::arrayValue);
 
-		Json::Value dataSnippit = data[sectionName][plugin];
-		pluginMetadataEntry* entry = extractPluginMetadataByType(dataSnippit);
+	for(std::string plugin : *plugins){
+		Json::Value dataSnippit;
+		if(multipleEntries){
+			if(!data[sectionName][index].isMember(plugin)){
+				index++;
+				continue;
+			}
+
+			dataSnippit = data[sectionName][index][plugin];
+			index++;
+		}
+		else{
+			if(!data[sectionName].isMember(plugin))  continue;
+			dataSnippit = data[sectionName][plugin];
+		}
 		
+		pluginMetadataEntry* entry = extractPluginMetadataByType(dataSnippit);
 		entry->version = dataSnippit["version"].asString();
 
 		extractedPluginMetadata->push_back(entry);

@@ -49,7 +49,9 @@ If you want an example, I created an example program [here](https://github.com/T
 ## Compiling the Stuff in the Repository
 ### Linux
 1. Download source files.
+    - If you want to make Windows executables, also install [mingw-w64-jsoncpp](https://aur.archlinux.org/packages/mingw-w64-jsoncpp). If you don't know how, just use `yay`
 2. Run the included makefile.
+    - To make Windows executables, run `make windows`
 
 ### Windows (outdated, probably)
 Setting up the right dependicies on Windows took me a long time so there will be unnecessary steps below if you're an experienced dev.

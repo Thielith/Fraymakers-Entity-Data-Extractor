@@ -1,7 +1,6 @@
 COMPILER := g++
 COMPILER_WINDOWS := x86_64-w64-mingw32-g++
 
-FLAGS := -L/usr/local/lib -I/usr/local/include
 FLAGS_ERROR := -Wall -Wextra -Werror
 INCLUDE_JSON := -ljsoncpp
 INCLUDE_JSON_WINDOWS := -ljsoncpp_static
